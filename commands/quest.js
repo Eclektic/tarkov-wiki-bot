@@ -15,7 +15,7 @@ export async function execute(interaction) {
 	await interaction.reply('Searching for: ' + search)
 
 	// Launch the browser and open a new blank page
-    const browser = await puppeteer.launch({ headless: false, userDataDir: './../userDataDir' })
+    const browser = await puppeteer.launch({ headless: 'new', userDataDir: './../userDataDir' })
     const page = await browser.newPage()
 
     await page.setRequestInterception(true);
