@@ -35,7 +35,7 @@ export async function execute(interaction) {
     await page.goto('https://escapefromtarkov.fandom.com/fr/wiki/Sp%C3%A9cial:Recherche?fulltext=1&query=' + search)
 
     // Wait and click on first result
-    let searchInt = 1
+    let searchInt = 0
     const getQuestPage = await clickOnSearchResult(page, searchInt)
 
     if(!getQuestPage) {
