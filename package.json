@@ -1,0 +1,23 @@
+{
+  "name": "tarkov-wiki-bot",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "type": "module",
+  "scripts": {
+    "dev": "nodemon",
+    "start": "node index.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "discord.js": "^14.14.1",
+    "puppeteer": "^21.7.0"
+  },
+  "devDependencies": {
+    "@types/node": "^20.10.8",
+    "dotenv": "^16.3.1",
+    "eslint": "^8.56.0",
+    "nodemon": "^3.0.2"
+  }
+}
