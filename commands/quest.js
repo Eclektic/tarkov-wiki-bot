@@ -8,7 +8,7 @@ export const data = new SlashCommandBuilder()
 		option.setName('keywords')
 			.setDescription('What do you want to search?')
 			.setRequired(true)
-	);
+	)
 export async function execute(interaction) {
 	const search = interaction.options.getString('keywords')
 
@@ -35,8 +35,39 @@ export async function execute(interaction) {
     await page.goto('https://escapefromtarkov.fandom.com/fr/wiki/Sp%C3%A9cial:Recherche?fulltext=1&query=' + search)
 
     // Wait and click on first result
-    let searchInt = 0
-    const getQuestPage = await clickOnSearchResult(page, searchInt)
+    let getQuestPage = false
+    let elSearchResultSelector = await page.$x('//a[@class="unified-search__result__title"]')
+    const elSearchResultSelectorLenght = elSearchResultSelector.length
+
+    for (let i = 0; i < elSearchResultSelectorLenght; i++) {
+        const el = elSearchResultSelector[i];
+
+        if(!el) {
+            return false;
+        }
+    
+        await el.focus()
+    
+        await Promise.all([
+            page.waitForNavigation({ timeout: 10000 }),
+            page.keyboard.type('\n')
+        ]);
+    
+        // Check if it's a quest
+        const elCat = await page.$x('//tr[@id="va-infobox0-content"]//th[@class="va-infobox-header"][text()="Informations de la quête"]')
+    
+        // If not go back to search
+        if(elCat.length == 0) {
+            await Promise.all([
+                page.waitForNavigation({ timeout: 10000 }),
+                page.goBack()
+            ]);
+            elSearchResultSelector = await page.$x('//a[@class="unified-search__result__title"]')
+        } else {
+            getQuestPage = true
+            break
+        }
+    }
 
     if(!getQuestPage) {
         // Close headless session
@@ -141,31 +172,4 @@ export async function execute(interaction) {
 
     // Edit reply with embed
 	await interaction.editReply({ embeds: [wikiEmbed] })
-}
-
-async function clickOnSearchResult(page, searchInt) {
-    const elSearchResultSelector = await page.$x('//a[@class="unified-search__result__title"]')
-
-    if(!elSearchResultSelector[searchInt]) {
-        return false;
-    }
-
-	await elSearchResultSelector[searchInt].focus()
-
-    await Promise.all([
-		page.waitForNavigation({ timeout: 10000 }),
-		page.keyboard.type('\n')
-    ]);
-
-    // Check if it's a quest
-    const elCat = await page.$x('//tr[@id="va-infobox0-content"]//th[@class="va-infobox-header"][text()="Informations de la quête"]')
-
-    // If not go back to search
-    if(elCat.length == 0) {
-        await page.goBack()
-        searchInt++
-        await clickOnSearchResult(page, searchInt)
-    } else {
-        return true
-    }
 }
