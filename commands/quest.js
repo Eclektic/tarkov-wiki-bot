@@ -105,9 +105,16 @@ export async function execute(interaction) {
     const elGuideText = await page.$x('//span[@id="Guide"]/../following-sibling::p[1] | //span[@id="Guide"]/../following-sibling::ul[1]')
     let guideText = ''
     if(elGuideText.length >= 1) {
-        elGuideText.forEach(async (el, i = 0) => {
+        for (let i = 0; i < elGuideText.length; i++) {
+            const el = elGuideText[i];
             guideText += '\n' +  await page.evaluate(el => el.textContent, elGuideText[i])
-        });
+        }
+
+        // Check guideText isn't above 1024char
+        if(guideText.length > 1024) {
+            guideText = guideText.substring(0, 1020)
+            guideText = guideText + '...'
+        }
     }
     
     // Get type
@@ -115,7 +122,7 @@ export async function execute(interaction) {
     const typeTxt = await page.evaluate(el => el.innerText, elType[0])
 
     // Get zone
-    const elZone = await page.$x('//tr[@id="va-infobox0-content"]//td[@class="va-infobox-label"][text()="Zone"]/following-sibling::td[@class="va-infobox-content"]/a')
+    const elZone = await page.$x('//tr[@id="va-infobox0-content"]//td[@class="va-infobox-label"][text()="Zone"]/following-sibling::td[@class="va-infobox-content"]')
     let zoneTxt
     if(elZone.length >= 1) {
         zoneTxt = await page.evaluate(el => el.textContent, elZone[0])
