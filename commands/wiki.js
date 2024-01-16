@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from 'discord.js'
 import puppeteer from 'puppeteer';
 
 export const data = new SlashCommandBuilder()
@@ -12,7 +12,8 @@ export const data = new SlashCommandBuilder()
 export async function execute(interaction) {
 	const search = interaction.options.getString('keywords')
 
-	await interaction.reply('Searching for: ' + search)
+	const loadingImg = new AttachmentBuilder('./assets/eft-escape-from-tarkov-small.gif')
+	await interaction.reply({ content: 'Search in progress for: ' + search, files:[loadingImg] })
 
 	// Launch the browser and open a new blank page
     const browser = await puppeteer.launch({ headless: 'new', userDataDir: './../userDataDir' })
@@ -90,5 +91,5 @@ export async function execute(interaction) {
 	}
 
 	// Edit reply with embed
-	await interaction.editReply({ embeds: [wikiEmbed] })
+	await interaction.editReply({ content: 'Result for: ' + search, embeds: [wikiEmbed], files: [] })
 }
