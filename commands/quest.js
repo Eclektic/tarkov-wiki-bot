@@ -1,4 +1,4 @@
-import { SlashCommandBuilder, EmbedBuilder } from 'discord.js'
+import { SlashCommandBuilder, EmbedBuilder, AttachmentBuilder } from 'discord.js'
 import puppeteer from 'puppeteer';
 
 export const data = new SlashCommandBuilder()
@@ -20,13 +20,15 @@ export async function execute(interaction) {
 
     await page.setRequestInterception(true);
 
-	page.on('request', (request) => {
+    const requestHandler = (request) => {
 		if (['image', 'stylesheet', 'font', 'script'].indexOf(request.resourceType()) !== -1) {
 			request.abort()
 		} else {
 			request.continue()
 		}
-	});
+	}
+
+	page.on('request', requestHandler);
 
     // Set screen size
     //await page.setViewport({width: 1920, height: 1080})
@@ -140,11 +142,55 @@ export async function execute(interaction) {
 
     // Get next quest
 
+    // Check if it's a gunsmith quest
+    let gunsmithImg
+    if(typeTxt == "Personnalisation d'arme") {
+        // reload page without restrictions
+        await page.setRequestInterception(false);
+        page.off('request', requestHandler)
+        await Promise.all([
+            page.waitForNavigation({ timeout: 10000 }),
+            page.reload()
+        ]);
+
+        // Click on cookie prompt
+        const cookieEl = await page.$('div[data-tracking-opt-in-reject="true"]')
+        if(cookieEl && cookieEl.length >= 1) {
+            page.click('div[data-tracking-opt-in-reject="true"]')
+        }
+
+        // remove site notice
+        let div_selector_to_remove= ".sitenotice-wrapper";
+        await page.evaluate((sel) => {
+            var elements = document.querySelectorAll(sel);
+            for(var i=0; i< elements.length; i++){
+                elements[i].parentNode.removeChild(elements[i]);
+            }
+        }, div_selector_to_remove)
+
+        // add css to imprve final screenshot
+        await page.addStyleTag({content: '.wds-tab__content.wds-is-current{background:black;position:absolute;z-index:9999999;}'})
+
+        // get table element
+        const gunsmithTableEl = await page.$('.wds-tab__content.wds-is-current')
+        // scroll to element
+        await page.evaluate((el) => { el.scrollIntoView(); }, gunsmithTableEl);
+        await new Promise(r => setTimeout(r, 1000));
+        // take screenshot
+        gunsmithImg = await gunsmithTableEl.screenshot({
+            encoding: 'binary'
+        })
+    }
+
     // Get images
     const elImage = await page.$x('//ul[@class="gallery mw-gallery-packed"]//a[@class="image"][1]')
     let imageUrl
+    let file
     if(elImage.length >= 1) {
         imageUrl = await page.evaluate(el => el.getAttribute('href'), elImage[0])
+    } else if(gunsmithImg) {
+        file = new AttachmentBuilder(gunsmithImg, { name: search.replace(' ','-') + '.png' })
+        imageUrl = 'attachment://' + search.replace(' ','-') + '.png'
     }
 
     // Close headless session
@@ -178,5 +224,9 @@ export async function execute(interaction) {
     }
 
     // Edit reply with embed
-	await interaction.editReply({ embeds: [wikiEmbed] })
+    if(gunsmithImg) {
+        await interaction.editReply({ embeds: [wikiEmbed], files: [file] })
+    } else {
+        await interaction.editReply({ embeds: [wikiEmbed] })
+    }
 }

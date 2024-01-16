@@ -1,7 +1,7 @@
 import { REST, Routes } from 'discord.js';
 import 'dotenv/config';
 
-const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+const rest = new REST().setToken(process.env.BOT_TOKEN);
 
 // ...
 

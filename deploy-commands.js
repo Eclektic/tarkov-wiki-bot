@@ -5,6 +5,8 @@ import { join } from 'node:path';
 import path from 'path';
 import { fileURLToPath } from 'url';
 
+const deployCommandToAll = true;
+
 (async () => {
 	const __filename = fileURLToPath(import.meta.url);
 	const __dirname = path.dirname(__filename);
@@ -25,18 +27,27 @@ import { fileURLToPath } from 'url';
 	}
 
 	// Construct and prepare an instance of the REST module
-	const rest = new REST().setToken(process.env.DISCORD_TOKEN);
+	const rest = new REST().setToken(process.env.BOT_TOKEN);
 
 	// and deploy your commands!
 	(async () => {
 		try {
 			console.log(`Started refreshing ${commands.length} application (/) commands.`);
 
-			// The put method is used to fully refresh all commands in the guild with the current set
-			const data = await rest.put(
-				Routes.applicationGuildCommands(process.env.APP_ID, process.env.DISCORD_ID),
-				{ body: commands },
-			);
+			let data
+
+			if (deployCommandToAll) {
+				// The put method is used to fully refresh all commands
+				data = await rest.put(
+					Routes.applicationCommands(process.env.APP_ID),
+					{ body: commands },
+				);
+			} else {
+				data = await rest.put(
+					Routes.applicationGuildCommands(process.env.APP_ID, process.env.DISCORD_ID),
+					{ body: commands },
+				);
+			}
 
 			console.log(`Successfully reloaded ${data.length} application (/) commands.`);
 		} catch (error) {
