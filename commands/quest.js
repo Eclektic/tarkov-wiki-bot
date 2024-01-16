@@ -150,7 +150,7 @@ export async function execute(interaction) {
         await page.setRequestInterception(false);
         page.off('request', requestHandler)
         await Promise.all([
-            page.waitForNavigation({ timeout: 10000 }),
+            page.waitForNavigation({ timeout: 15000 }),
             page.reload()
         ]);
 
