@@ -155,8 +155,8 @@ export async function execute(interaction) {
 
         // Click on cookie prompt
         const cookieEl = await page.$('div[data-tracking-opt-in-reject="true"]')
-        if(cookieEl && cookieEl.length >= 1) {
-            page.click('div[data-tracking-opt-in-reject="true"]')
+        if(cookieEl) {
+            await page.click('div[data-tracking-opt-in-reject="true"]')
         }
 
         // remove site notice
