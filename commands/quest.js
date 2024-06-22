@@ -129,7 +129,10 @@ export async function execute(interaction) {
         
         // Get type
         const elType = await page.$x('//tr[@id="va-infobox0-content"]//td[@class="va-infobox-label"][text()="Type"]/following-sibling::td[@class="va-infobox-content"]')
-        const typeTxt = await page.evaluate(el => el.innerText, elType[0])
+        let typeTxt
+        if (elType[0]) {
+            typeTxt = await page.evaluate(el => el.innerText, elType[0])
+        }
 
         // Get zone
         const elZone = await page.$x('//tr[@id="va-infobox0-content"]//td[@class="va-infobox-label"][text()="Zone"]/following-sibling::td[@class="va-infobox-content"]')
@@ -140,11 +143,17 @@ export async function execute(interaction) {
 
         // Get given by
         const elGivenBy = await page.$x('//tr[@id="va-infobox0-content"]//td[@class="va-infobox-label"][text()="Donnée par"]/following-sibling::td[@class="va-infobox-content"]/a')
-        const givenByTxt = await page.evaluate(el => el.textContent, elGivenBy[0])
+        let givenByTxt
+        if (elGivenBy[0]) {
+            givenByTxt = await page.evaluate(el => el.textContent, elGivenBy[0])
+        }
 
         // Get Kappa
         const elKappa = await page.$x('//tr[@id="va-infobox0-content"]//td[@class="va-infobox-label"]/a[text()="Kappa"]/../following-sibling::td[@class="va-infobox-content"]/font')
-        const kappaTxt = await page.evaluate(el => el.textContent, elKappa[0])
+        let kappaTxt
+        if (elKappa[0]) {
+            kappaTxt = await page.evaluate(el => el.textContent, elKappa[0])
+        }
 
         // Get prev quest
 
@@ -152,7 +161,10 @@ export async function execute(interaction) {
 
         // Check if it's a gunsmith quest
         let gunsmithImg
-        if(typeTxt == "Personnalisation d'arme") {
+        const isItGS = mainTitle.search("Armurier")
+        if(typeTxt == "Personnalisation d'arme" || isItGS >= 0) {
+            typeTxt = "Personnalisation d'arme"
+
             // reload page without restrictions
             page.off('request', requestHandler);
             requestHandler = (request) => {
